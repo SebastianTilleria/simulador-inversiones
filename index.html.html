@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Interés Compuesto — Simulador de inversiones</title>
+<style>
+:root{--bg:#0b1020;--panel:#121a2d;--panel2:#18233b;--text:#eef3ff;--muted:#9eacc8;--line:#2b3855;--green:#56e0a2;--blue:#7ca7ff;--orange:#ffc878}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#172644 0,#0b1020 52%);color:var(--text);font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+.wrap{max-width:1180px;margin:auto;padding:30px 18px 50px}.eyebrow{color:var(--green);text-transform:uppercase;letter-spacing:.14em;font-size:12px;font-weight:800}
+h1{font-size:clamp(28px,4vw,44px);line-height:1.1;margin:9px 0 12px;letter-spacing:-.04em}.intro{color:var(--muted);max-width:750px;margin-bottom:25px}
+.layout{display:grid;grid-template-columns:350px 1fr;gap:18px;align-items:start}.panel{background:rgba(18,26,45,.94);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:0 15px 40px #0002}.panel h2{font-size:17px;margin:0 0 17px}
+.field{margin:0 0 15px}.field label{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:#d7e0f5;margin-bottom:6px}.field small{color:var(--muted);font-size:11px}.field input,.field select{width:100%;background:#0c1426;border:1px solid #34415e;border-radius:9px;color:var(--text);padding:11px 12px;font:inherit;outline:none}.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px #7ca7ff22}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}.actions{display:flex;gap:10px;margin-top:20px}.btn{border:0;border-radius:10px;padding:12px 15px;font-weight:800;cursor:pointer}.primary{background:var(--green);color:#072218;flex:1}.secondary{background:#24314d;color:var(--text)}
+.results{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}.metric{padding:16px;background:var(--panel2);border:1px solid var(--line);border-radius:14px;min-width:0}.metric .label{font-size:12px;color:var(--muted)}.metric .value{font-size:clamp(20px,2.6vw,29px);font-weight:800;letter-spacing:-.035em;margin-top:5px;overflow-wrap:anywhere}.metric .sub{font-size:11px;color:var(--muted);margin-top:4px}.green{color:var(--green)}.blue{color:var(--blue)}
+.chartpanel{margin-top:15px}.charthead{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}.legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}.chart{width:100%;height:280px;display:block;margin-top:10px}.tablewrap{overflow:auto;max-height:350px;margin-top:14px}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:10px 12px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}th{color:var(--muted);font-weight:600;position:sticky;top:0;background:var(--panel)}th:first-child,td:first-child{text-align:left}.note{font-size:12px;color:var(--muted);margin-top:18px}.pill{display:inline-block;background:#20334a;color:var(--green);border:1px solid #2e5a54;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.results{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:18px}}
+@media(max-width:430px){.two{grid-template-columns:1fr}.wrap{padding:22px 12px}.results{gap:8px}.metric{padding:12px}.metric .value{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Herramienta gratuita · Inversiones</div>
+  <h1>Simulador de interés compuesto</h1>
+  <p class="intro">Proyecta cómo podrían crecer tus inversiones en acciones y dividendos con aportes mensuales. Ajusta los supuestos y compara cuánto proviene de tu propio dinero y cuánto del crecimiento estimado.</p>
+  <div class="layout">
+    <section class="panel">
+      <h2>Configura tu inversión</h2>
+      <div class="field"><label for="initial">Capital inicial <small>CLP</small></label><input id="initial" type="number" min="0" step="10000" value="8000000"></div>
+      <div class="field"><label for="monthly">Aporte mensual inicial <small>CLP</small></label><input id="monthly" type="number" min="0" step="10000" value="400000"></div>
+      <div class="two">
+        <div class="field"><label for="growth">Aumento anual del aporte <small>%</small></label><input id="growth" type="number" min="-100" max="100" step="0.5" value="6"></div>
+        <div class="field"><label for="return">Rentabilidad anual <small>%</small></label><input id="return" type="number" min="-99" max="100" step="0.5" value="8"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="years">Plazo <small>años</small></label><input id="years" type="number" min="1" max="80" step="1" value="20"></div>
+        <div class="field"><label for="inflation">Inflación anual <small>%</small></label><input id="inflation" type="number" min="0" max="30" step="0.5" value="3"></div>
+      </div>
+      <div class="two">
+        <div class="field"><label for="dividend">Dividendos reinvertidos <small>% anual adicional</small></label><input id="dividend" type="number" min="0" max="30" step="0.25" value="0"></div>
+        <div class="field"><label for="fee">Costos anuales estimados <small>%</small></label><input id="fee" type="number" min="0" max="10" step="0.1" value="0.3"></div>
+      </div>
+      <div class="field"><label for="timing">Momento del aporte mensual</label><select id="timing"><option value="end" selected>Fin de cada mes</option><option value="start">Inicio de cada mes</option></select></div>
+      <div class="actions"><button class="btn primary" id="calculate">Calcular proyección</button><button class="btn secondary" id="reset">Restablecer</button></div>
+      <p class="note">La rentabilidad y los dividendos son supuestos, no garantías. Las acciones pueden perder valor y sus rendimientos varían de un año a otro.</p>
+    </section>
+    <section>
+      <div class="results">
+        <div class="metric"><div class="label">Valor final estimado</div><div class="value green" id="final">—</div><div class="sub" id="realFinal">En pesos de hoy: —</div></div>
+        <div class="metric"><div class="label">Dinero aportado total</div><div class="value" id="contrib">—</div><div class="sub">Capital inicial + aportes mensuales</div></div>
+        <div class="metric"><div class="label">Ganancia estimada</div><div class="value blue" id="profit">—</div><div class="sub" id="profitPct">—</div></div>
+        <div class="metric"><div class="label">Rentabilidad efectiva usada</div><div class="value" id="effective">—</div><div class="sub">Tras costos estimados, con dividendos reinvertidos</div></div>
+      </div>
+      <div class="panel chartpanel">
+        <div class="charthead"><h2 style="margin:0">Evolución del patrimonio</h2><div class="legend"><span><i class="dot" style="background:var(--green)"></i>Valor estimado</span><span><i class="dot" style="background:var(--blue)"></i>Aportado</span></div></div>
+        <canvas id="chart" class="chart" aria-label="Gráfico de evolución de la inversión"></canvas>
+        <div class="note" id="chartNote">Proyección mensual con capitalización mensual.</div>
+      </div>
+      <div class="panel chartpanel">
+        <div class="charthead"><h2 style="margin:0">Resumen por año</h2><span class="pill" id="horizon">20 años</span></div>
+        <div class="tablewrap"><table><thead><tr><th>Año</th><th>Saldo estimado</th><th>Aportes acumulados</th><th>Ganancia</th></tr></thead><tbody id="yearRows"></tbody></table></div>
+      </div>
+    </section>
+  </div>
+  <p class="note">Modelo simplificado: convierte la tasa anual efectiva en una tasa mensual equivalente, suma rentabilidad y dividendos reinvertidos, descuenta costos anuales aproximados y aplica aumentos al aporte cada aniversario. No considera impuestos, inflación específica de cada año, tipo de cambio, comisiones por transacción ni volatilidad real del mercado. No constituye asesoría financiera.</p>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const defaults = {initial:8000000,monthly:400000,growth:6,return:8,years:20,inflation:3,dividend:0,fee:0.3,timing:'end'};
+const money = n => new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(Number.isFinite(n)?n:0);
+const pct = n => (n*100).toLocaleString('es-CL',{maximumFractionDigits:2})+'%';
+function getInputs(){
+ const v={}; for(const k of Object.keys(defaults)) v[k]=$(k).value;
+ for(const k of ['initial','monthly','growth','return','years','inflation','dividend','fee']) v[k]=Number(v[k]);
+ v.years=Math.max(1,Math.min(80,Math.floor(v.years||1)));
+ return v;
+}
+function calculate(){
+ const v=getInputs();
+ if(Object.values(v).some(x=>typeof x==='number'&&!Number.isFinite(x))) return;
+ const annualNet=(1+v.return/100)*(1+v.dividend/100)*(1-v.fee/100)-1;
+ const annualFactor=Math.max(0.000001,1+annualNet);
+ const rm=Math.pow(annualFactor,1/12)-1;
+ const rows=[]; let balance=Math.max(0,v.initial), contributions=balance;
+ rows.push({year:0,balance,contributions,profit:0});
+ for(let m=1;m<=v.years*12;m++){
+   const monthIndex=m-1;
+   const yearlyRate=Math.max(-1, v.growth/100);
+   const payment=Math.max(0,v.monthly)*Math.pow(1+yearlyRate,Math.floor(monthIndex/12));
+   if(v.timing==='start') balance+=payment;
+   balance*=1+rm;
+   if(v.timing==='end') balance+=payment;
+   contributions+=payment;
+   if(m%12===0) rows.push({year:m/12,balance,contributions,profit:balance-contributions});
+ }
+ const end=rows[rows.length-1];
+ $('final').textContent=money(end.balance);
+ $('contrib').textContent=money(end.contributions);
+ $('profit').textContent=money(end.profit);
+ $('profitPct').textContent='Ganancia / aportes: '+(end.contributions>0?pct(end.profit/end.contributions):'—');
+ $('effective').textContent=pct(annualNet);
+ $('realFinal').textContent='En pesos de hoy: '+money(end.balance/Math.pow(1+Math.max(-.99,v.inflation/100),v.years));
+ $('horizon').textContent=v.years+' años';
+ $('yearRows').innerHTML=rows.slice(1).map(r=>`<tr><td>${r.year}</td><td>${money(r.balance)}</td><td>${money(r.contributions)}</td><td>${money(r.profit)}</td></tr>`).join('');
+ drawChart(rows);
+ $('chartNote').textContent=`Aporte mensual inicial: ${money(v.monthly)} · Aumento anual de aportes: ${pct(v.growth/100)} · Horizonte: ${v.years} años.`;
+}
+function drawChart(rows){
+ const canvas=$('chart'), ctx=canvas.getContext('2d'), dpr=window.devicePixelRatio||1;
+ const rect=canvas.getBoundingClientRect(); canvas.width=Math.max(300,rect.width)*dpr; canvas.height=280*dpr;
+ ctx.scale(dpr,dpr); const w=canvas.width/dpr,h=280;
+ const pad={l:68,r:12,t:15,b:32}, cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+ ctx.clearRect(0,0,w,h);
+ const max=Math.max(1,...rows.map(r=>Math.max(r.balance,r.contributions)))*1.08;
+ const x=i=>pad.l+(i/(rows.length-1||1))*cw, y=n=>pad.t+ch-(n/max)*ch;
+ ctx.font='11px system-ui';ctx.fillStyle='#9eacc8';ctx.strokeStyle='#2b3855';ctx.lineWidth=1;
+ for(let i=0;i<=4;i++){const val=max*i/4, yy=y(val);ctx.beginPath();ctx.moveTo(pad.l,yy);ctx.lineTo(w-pad.r,yy);ctx.stroke();ctx.textAlign='right';ctx.fillText(val>=1e6?(val/1e6).toLocaleString('es-CL',{maximumFractionDigits:1})+' M':Math.round(val).toLocaleString('es-CL'),pad.l-8,yy+4);}
+ function line(key,color){ctx.beginPath();rows.forEach((r,i)=>{if(i===0)ctx.moveTo(x(i),y(r[key]));else ctx.lineTo(x(i),y(r[key]));});ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';ctx.stroke();}
+ line('balance','#56e0a2');line('contributions','#7ca7ff');
+ ctx.fillStyle='#9eacc8';ctx.textAlign='center';const ticks=Math.min(rows.length-1,5);
+ for(let i=0;i<=ticks;i++){const idx=Math.round((rows.length-1)*i/ticks);ctx.fillText(rows[idx].year===0?'Inicio':rows[idx].year+' años',x(idx),h-8);}
+}
+$('calculate').addEventListener('click',calculate);
+$('reset').addEventListener('click',()=>{for(const [k,val] of Object.entries(defaults))$(k).value=val;calculate();});
+for(const k of Object.keys(defaults)) $(k).addEventListener('change',calculate);
+window.addEventListener('resize',calculate);
+calculate();
+</script>
+</body>
+</html>
